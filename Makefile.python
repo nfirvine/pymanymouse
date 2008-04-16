@@ -1,0 +1,35 @@
+# Set this variable if you need to.
+
+CFLAGS += -O0 -Wall -g -c
+CFLAGS += -I.
+
+#CFLAGS += -ISDL-1.2.8/include
+#LDFLAGS += -LSDL-1.2.8/lib -lSDL -lSDLmain
+
+CC := gcc
+LD := gcc
+
+BASEOBJS := linux_evdev.o macosx_hidutilities.o macosx_hidmanager.o windows_wminput.o x11_xinput.o manymouse.o
+
+
+all: python 
+
+clean:
+	rm -rf _manymouse.so manymouse_wrap.c manymouse.py
+
+%.o : %c
+	$(CC) $(CFLAGS) -o $@ $<
+
+python: manymouse.py _manymouse.so
+
+manymouse_wrap.c manymouse.py: manymouse.i
+	swig -python -outdir . -o ./manymouse_wrap.c manymouse.i
+	
+_manymouse.so: manymouse_wrap.c $(BASEOBJS)
+	$(CC) -I. -I/usr/include/python2.5/ -shared manymouse_wrap.c $(BASEOBJS) -o _manymouse.so
+	
+
+
+
+# end of Makefile ...
+
